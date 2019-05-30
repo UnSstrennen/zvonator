@@ -21,3 +21,6 @@ class Ring:
 
     def switch(self):
         self.state = not self.state
+
+
+ring = Ring()
