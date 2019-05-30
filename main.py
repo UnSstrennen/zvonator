@@ -20,7 +20,19 @@ class Ring:
         self.state = False
 
     def switch(self):
+        """ switch ring operating state to opposite mode"""
         self.state = not self.state
+        self.on() if self.state else self.off()
+
+    def on(self):
+        """ create timemable for crontab and update it """
+        print('on')
+        pass
+
+    def off(self):
+        """ do crontab -r for stop operating """
+        print('off')
+        pass
 
 
 ring = Ring()
