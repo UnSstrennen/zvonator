@@ -1,5 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
+from configparser import ConfigParser
+from crontab import CronTab
 
 
 app = Flask(__name__)
@@ -7,6 +9,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'camel-kalmik228'
 db = SQLAlchemy(app)
+
+config = ConfigParser()
+config.read('config.ini')
+
+cron = CronTab(user=config['linux_user']['username'])
 
 
 class RingModel(db.Model):
