@@ -9,7 +9,15 @@ app.config['SECRET_KEY'] = 'camel-kalmik228'
 db = SQLAlchemy(app)
 
 
-class Ring(db.Model):
+class RingModel(db.Model):
     """ Описание единовременного звонка как сущности """
     id = db.Column(db.Integer, primary_key=True)
-    time = db.Column(db.)
+    # time = db.Column(db.)
+
+
+class Ring:
+    def __init__(self):
+        self.state = False
+
+    def switch(self):
+        self.state = not self.state
