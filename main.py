@@ -33,7 +33,7 @@ class Ring:
         self.state = False
 
     def switch(self):
-        """ switch ring operating state to opposite mode"""
+        """ switch ring operating state to opposite mode """
         self.state = not self.state
         self.on() if self.state else self.off()
 
