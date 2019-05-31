@@ -16,10 +16,12 @@ config.read('config.ini')
 cron = CronTab(user=config['linux_user']['username'])
 
 
-class RingModel(db.Model):
+class Rings(db.Model):
     """ DB model of single ring """
     id = db.Column(db.Integer, primary_key=True)
-    start_time = db.Column(db.Text(8), nullable=False)
+    start_hour = db.Column(db.Integer, nullable=False)
+    start_minute = db.Column(db.Integer, nullable=False)
+    start_second = db.Column(db.Integer, nullable=False)
     duration = db.Column(db.Integer, nullable=False)
     dow = db.Column(db.Text(27), nullable=False)
     comment = db.Column(db.Text(50), nullable=False)
@@ -38,13 +40,12 @@ class Ring:
     def on(self):
         """ create timemable for crontab and update it """
         print('on')
-        rings_to_set = RingModel.query.all()
+        rings_to_set = Rings.query.all()
         for ring_to_add in rings_to_set:
-            start_time = ring_to_add.time.split(':')  # as list of hours, minutes and seconds
-            hour, minute, second = start_time
-            files_paths = ring_to_add.files_paths
+            hour, minute, second = ring_to_add.start_hour, ring_to_add.start_minute, ring_to_add.start_second
+            files_paths = ring_to_add.files_paths.split(';')
             dow = ring_to_add.dow.split()
-            command = 'sleep({}); python run.py {}'.format(int(second), ' '.join(files_paths))
+            command = 'sleep({}); python run.py {};'.format(int(second), ' '.join(files_paths))
             comment = config['cron']['comment_start'] + ' ' + ring_to_add.comment
             job = cron.new(command=command, comment=comment)  # TODO: check the command
             job.hour.on(hour)
@@ -65,3 +66,4 @@ class Ring:
 
 db.create_all()
 ring = Ring()
+ring.on()
