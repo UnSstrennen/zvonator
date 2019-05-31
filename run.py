@@ -26,6 +26,7 @@ to_play = argv[1:]  # arguments given in cmd are paths to sounds to play
 amplifier.on()
 for path in to_play:
     playsound(path)
+    # if current sound is last sound - do not make a delay
     last = to_play[-1] == path
     if not last:
         sleep(config['play_settings']['delay_between_tracks'])
