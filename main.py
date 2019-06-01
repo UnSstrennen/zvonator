@@ -9,11 +9,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'camel-kalmik228'
 db = SQLAlchemy(app)
+db.init_app(app)
 
 config = ConfigParser()
 config.read('config.ini')
 
-cron = CronTab(user=config['linux_user']['username'])
+# cron = CronTab(user=config['linux_user']['username'])
 
 
 class Rings(db.Model):
@@ -28,6 +29,9 @@ class Rings(db.Model):
     files_paths = db.Column(db.Text(1000), nullable=False)
 
 
+asdadqfwgfqgaw = Rings.query.all()
+
+
 class Ring:
     def __init__(self):
         self.state = False
@@ -40,7 +44,7 @@ class Ring:
     def on(self):
         """ create timemable for crontab and update it """
         print('on')
-        amplifier_booting_duration = config['amplifier']['boot_duration']
+        amplifier_booting_duration = int(config['amplifier']['boot_duration'])
         rings_to_set = Rings.query.all()
         for ring_to_add in rings_to_set:
             hour, minute, second = ring_to_add.start_hour, ring_to_add.start_minute, ring_to_add.start_second
@@ -52,17 +56,20 @@ class Ring:
                 self.shift_dow(dow)
             command = 'sleep({}); python run.py {};'.format(int(second), ' '.join(files_paths))
             comment = config['cron']['comment_start'] + ' ' + ring_to_add.comment
+            continue
             job = cron.new(command=command, comment=comment)  # TODO: check the command
             job.hour.on(hour)
             job.minute.on(minute)
             if dow != ['*']:
                 job.dow.on(*dow)
+        return
         cron.write()
 
     def off(self):
         """ remove zvonator jobs from crontab """
         print('off')
         comment_start = config['cron']['comment_start']
+        return
         for job in cron:
             if job.comment.startswith(comment_start):
                 cron.remove(job)
@@ -88,7 +95,6 @@ class Ring:
             time = 86400 - abs(time)
             flag = True
         # convert time in seconds to normal time
-        print(time)
         hour = time // 3600
         time -= hour * 3600
         minute = time // 60
