@@ -40,11 +40,16 @@ class Ring:
     def on(self):
         """ create timemable for crontab and update it """
         print('on')
+        amplifier_booting_duration = config['amplifier']['boot_duration']
         rings_to_set = Rings.query.all()
         for ring_to_add in rings_to_set:
             hour, minute, second = ring_to_add.start_hour, ring_to_add.start_minute, ring_to_add.start_second
             files_paths = ring_to_add.files_paths.split(';')
             dow = ring_to_add.dow.split()
+            hour, minute, second, need_to_shift_dow = self.sub_ring_time(
+                hour, minute, second, amplifier_booting_duration)
+            if need_to_shift_dow:
+                self.shift_dow(dow)
             command = 'sleep({}); python run.py {};'.format(int(second), ' '.join(files_paths))
             comment = config['cron']['comment_start'] + ' ' + ring_to_add.comment
             job = cron.new(command=command, comment=comment)  # TODO: check the command
@@ -62,6 +67,43 @@ class Ring:
             if job.comment.startswith(comment_start):
                 cron.remove(job)
         cron.write()
+
+    def collide(self, start_hour_1, start_minute_1, start_second_1, duration_1,
+                start_hour_2, start_minute_2, start_second_2, duration_2):
+        start_time_1 = start_hour_1 * 3600 + start_minute_1 * 60 + start_second_1
+        start_time_2 = start_hour_2 * 3600 + start_minute_2 * 60 + start_second_2
+        end_time_1 = start_time_1 + duration_1
+        end_time_2 = start_time_2 + duration_2
+        if start_time_1 <= start_time_2 <= end_time_1 or start_time_1 <= end_time_2 <= end_time_1 or \
+                start_time_2 <= start_time_1 <= end_time_2:
+            return True
+        return False
+
+    def sub_ring_time(self, hour, minute, sec, sec_to_subtract):
+        flag = False
+        # make seconds as days
+        time = hour * 3600 + minute * 60 + sec
+        time -= sec_to_subtract
+        if time < 0:
+            time = 86400 - abs(time)
+            flag = True
+        # convert time in seconds to normal time
+        print(time)
+        hour = time // 3600
+        time -= hour * 3600
+        minute = time // 60
+        time -= minute * 60
+        sec = time
+        return hour, minute, sec, flag
+
+    def shift_dow(self, dow):
+        weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+        res = list()
+        if dow == ['*']:
+            return ['*']
+        for weekday in dow:
+            res.append(weekdays[weekdays.index(weekday) - 1])
+        return res
 
 
 db.create_all()

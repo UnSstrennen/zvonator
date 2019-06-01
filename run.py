@@ -6,7 +6,7 @@ from playsound import playsound
 
 class Amplifier:
     def __init__(self):
-        self.delay_before_using = config['amplifier']['delay_before_using']
+        self.delay_before_using = config['amplifier']['boot_duration']
         self.port = config['amplifier']['port']
 
     def on(self):
