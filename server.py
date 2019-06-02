@@ -32,6 +32,8 @@ def upload():
         return render_template('upload.html')
     elif request.method == 'POST':
         file = request.files['file']
+        print(request.form.get('hours'))
+        return '11111'
         if file:
             filename = secure_filename(file.filename)
             file.save(path.join(UPLOAD_DIR, filename))
