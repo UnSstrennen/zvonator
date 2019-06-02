@@ -114,4 +114,3 @@ class Ring:
 
 db.create_all()
 ring = Ring()
-ring.on()

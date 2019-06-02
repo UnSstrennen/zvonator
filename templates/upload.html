@@ -1,14 +1,29 @@
 <!DOCTYPE html>
-<html lang="кг">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>Звонатор - загрузка треков</title>
-    <form method="POST" enctype="multipart/form-data" action="/upload">
-      <input type="file" name="file[]" multiple="">
-      <input type="submit" value="add">
-    </form>
+
+    <script src="https://rawgit.com/enyo/dropzone/master/dist/dropzone.js"></script>
+    <link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
 </head>
 <body>
+<form action="/upload" class="dropzone" id="dropzone" enctype=multipart/form-data></form>
+<button type="submit" id="button" class="btn btn-primary" onclick="sendFiles()">Submit</button>
+<script type="text/javascript">
+    var dropzone = document.getElementById('dropzone');
 
+    // configure dropzone
+    Dropzone.options.dropzone = {
+    autoProcessQueue: false,
+    maxFilesize: null
+    };
+
+    function sendFiles() {
+        var dropzone = Dropzone.forElement("#dropzone");
+        dropzone.processQueue();
+        window.location.replace("/index");
+    }
+</script>
 </body>
 </html>

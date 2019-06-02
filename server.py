@@ -1,5 +1,10 @@
 from flask import Flask, render_template, request, redirect
-from main import ring, db
+from werkzeug.utils import secure_filename
+from main import ring, db, config
+from os import path
+
+
+UPLOAD_DIR = config['play_settings']['sound_directory']
 
 
 app = Flask(__name__)
@@ -23,7 +28,14 @@ def switch_ring():
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
-    return render_template('upload.html')
+    if request.method == 'GET':
+        return render_template('upload.html')
+    elif request.method == 'POST':
+        file = request.files['file']
+        if file:
+            filename = secure_filename(file.filename)
+            file.save(path.join(UPLOAD_DIR, filename))
+        return 'OK'
 
 
 if __name__ == '__main__':
