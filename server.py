@@ -28,28 +28,16 @@ def switch_ring():
     return redirect('/')
 
 
-def valid_filename(filename):
-    """ returns OK as string if filename is valid, else it returns error description as string """
-    if len(filename) == 0:
-        return 'Пустое имя файла!'
-    if filename[0] in punctuation:
-        return 'Имя файла не должно начинаться со знаков препинания!'
-    format = filename.split('.')
-    if format not in SUPPORTED_FORMATS:
-        return 'Формат файла не поддерживается.'
-    return 'OK'
-
-
 @app.route('/upload', methods=['GET', 'POST', 'DELETE'])
 def upload():
     if request.method == 'GET':
-        return render_template('upload.html')
+        supported_formats_str = ' '.join(SUPPORTED_FORMATS)
+        return render_template('upload.html', SUPPORTED_FORMATS=supported_formats_str)
     elif request.method == 'POST':
         file = request.files['file']
         print(request.form.get('hours'))
         if file:
             filename = secure_filename(file.filename)
-            valid = valid_filename(filename)
             file.save(os.path.join(UPLOAD_DIR, filename))
         return 'OK'
     elif request.method == 'DELETE':
