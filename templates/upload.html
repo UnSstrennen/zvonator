@@ -6,15 +6,52 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script src="https://rawgit.com/enyo/dropzone/master/dist/dropzone.js"></script>
     <link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+    <style>
+        .form-group {
+            text-align: left;
+            display: inline-block;
+            padding-right: 1vw;
+        }
+
+        .form-group small {
+            color: grey;
+            display: block;
+        }
+
+        .days, .dows {
+            margin-left: 1.5vw;
+        }
+
+        #dropzone {
+            border: dashed 5px grey;
+            border-radius: 20px;
+            background-color: whitesmoke;
+        }
+    </style>
 </head>
 <body>
-<div class="container" style="text-align: center;">
-    <h1>12345</h1>
-    <form action="/upload" class="dropzone" id="dropzone" enctype=multipart/form-data style="border: none;">
-        <input type="text">
-        <div id="dropzone_preview"></div>
+<div class="container">
+    <h1 style="text-align: center;">Создать новый звонок</h1>
+    <br>
+    <form action="/upload" method="post" id="another_data_form">
+        <div class="form-group">
+            <h3>Выберите режим звонка: </h3>
+            <input type="radio" name="repeat" value="no" onchange="change_settings(this);"> Никогда <small>Звонок "на один раз"</small>
+            <input type="radio" name="repeat" value="every_year" onchange="change_settings(this);"> Ежегодно <small>Звонок будет повторяться в этот день каждый год</small>
+            <input type="radio" name="repeat" value="every_month" onchange="change_settings(this);"> Ежемесячно <small>Звонок будет повторяться в указанные дни ежемесячно</small>
+            <input type="radio" name="repeat" value="on_selected_days_of_months" onchange="change_settings(this);"> В указанные месяца/дни <small>Звонок будет повторяться в указанные дни указанных меясцев</small>
+            <input type="radio" name="repeat" value="on_selected_dows" onchange="change_settings(this);"> В указанные дни недели <small>Звонок будет повторяться в указанные дни недели</small>
+        </div>
+        <div id="another_data"></div>
+        <h3>Комментарий: </h3>
+        <textarea style="width: 100%" type="text" name="comment" placeholder="Оставьте небольшое пояснение, с какой целью вы добавляете этот звонок" rows="2"></textarea>
     </form>
-    <button type="submit" id="button" style="margin-top: 1vw" class="btn btn-outline-primary" onclick="sendFiles()">Отправить</button>
+    <br>
+    <form action="/upload" method="post" class="dropzone" id="dropzone" enctype=multipart/form-data>
+        <div id="dropzone_preview"><div class="dz-message" id="dz-message" data-dz-message><span id="dz-message-text">Выберите треки</span></div></div>
+    </form>
+
+    <div style="width: 100%; text-align: center;"><button type="submit" id="button" style="margin-top: 1vw;" class="btn btn-outline-primary btn-lg" onclick="document.forms['another_data_form'].submit();">Отправить</button></div>
 </div>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
@@ -24,6 +61,82 @@
     const PUNCTUATION = ['/', '[', '.', ',', '\\', '/', '#', '!', '$',
         '%', '\\', '^', '&', '\\', '*', ';', ':', '{', '}', '=', '\\', '-',
         '_', '`', '~', '(', ')', ']', '/', 'g'];
+
+    String.prototype.format = function () {
+            var a = this;
+            for (var k in arguments) {
+                a = a.replace(new RegExp("\\{" + k + "\\}", 'g'), arguments[k]);
+            }
+            return a
+        }
+
+    function days_checkbox_generator(number_of_days) {
+        const NEWLINE_AT_EVERY = 6;
+        var res = '<h5>Выберите дни месяца:</h5>';
+        for (var i = 1; i <= number_of_days; i++) {
+            res += '<input type="checkbox" class="days" name="days" value="{0}"> {1}'.format(i, i);
+            if (i % NEWLINE_AT_EVERY == 0 && i != number_of_days) {
+                res += '<br>';
+            }
+        }
+        return res;
+    }
+
+    function change_days_number_in_select(month_obj) {
+        var month = month_obj.value;
+        document.getElementById('day').innerHTML = days_option_generator(month);
+    }
+
+    function days_option_generator(month) {
+        var number_of_days = 31;
+        var res = '';
+        // if there are 30 days in month
+        if (['APR', 'JUN', 'SEP', 'NOV'].indexOf(month) != -1) {
+            number_of_days = 30;
+        }
+        else if (['FEB'].indexOf(month) != -1) {
+            number_of_days = 28;
+        }
+        for (var i = 1; i <= number_of_days; i++) {
+            res += '<option value="{0}"> {1}'.format(i, i);
+        }
+        return res;
+    }
+
+    function change_settings(radio) {
+        const dows_html = '<h5>Выберите дни недели:</h5><input type="checkbox" class="dows" name="dows" value="MON"> Понедельник<input type="checkbox" class="dows" name="dows" value="TUE"> Вторник<input type="checkbox" class="dows" name="dows" value="WED"> Среда<input type="checkbox" class="dows" name="dows" value="THU"> Четверг<input type="checkbox" class="dows" name="dows" value="FRI"> Пятница<input type="checkbox" class="dows" name="dows" value="SAT"> Суббота<input type="checkbox" class="dows" name="dows" value="SUN"> Воскресенье';
+        const months_html = '<h5>Выберите месяца:</h5><input type="checkbox" class="dows" name="dows" value="JAN"> Январь	<input type="checkbox" class="dows" name="dows" value="FEB"> Февраль	<input type="checkbox" class="dows" name="dows" value="MAR"> Март	<input type="checkbox" class="dows" name="dows" value="APR"> Апрель	<input type="checkbox" class="dows" name="dows" value="MAY"> Май	<input type="checkbox" class="dows" name="dows" value="JUN"> Июнь	<br><input type="checkbox" class="dows" name="dows" value="JUL"> Июль	<input type="checkbox" class="dows" name="dows" value="AUG"> Август	<input type="checkbox" class="dows" name="dows" value="SEP"> Сентябрь	<input type="checkbox" class="dows" name="dows" value="OCT"> Октябрь	<input type="checkbox" class="dows" name="dows" value="NOW"> Ноябрь	<input type="checkbox" class="dows" name="dows" value="DEC"> Декабрь'
+        const date_html = '<div class="form-group"><h5>Выберите дату:</h5><input type="date" id="date" name="date"></div>'
+        const time_html = '<div class="form-group"><h5>Выберите время:</h5><input type="time" id="time" name="time" step="1"></div>'
+        const months_for_every_year_html = '<h5>Выберите месяц:</h5><select name="month" onchange="change_days_number_in_select(this);"><option value="JAN">Январь</option>	<option value="FEB">Февраль</option>	<option value="MAR">Март</option>	<option value="APR">Апрель</option>	<option value="MAY">Май</option>	<option value="JUN">Июнь</option>	<option value="JUL">Июль</option>	<option value="AUG">Август</option>	<option value="SEP">Сентябрь</option>	<option value="OCT">Октябрь</option>	<option value="NOW">Ноябрь</option>	<option value="DEC">Декабрь</option></select>'
+        const days_warning = '<div class="alert alert-warning" role="alert">Учтите, что не все месяцы имеют 31 день. В случае, если будут выбраны дни, которые не входят в один из выбранных месяцев, они будут проигнорированы.</div>'
+        const only_28_days_warning = '<div class="alert alert-warning" role="alert">Нельзя создать ежемесячный звонок на 29, 30 и 31 число, так как не все месяцы имеют 31 день.</div>'
+
+        var inner_div = document.getElementById('another_data');
+        var mode = radio.value;
+        switch (mode) {
+            case 'no':
+            inner_div.innerHTML = date_html + time_html;
+            break;
+
+            case 'every_year':
+            inner_div.innerHTML = '<h5>Выберите день:</h5><select name="day" id="day">' + days_option_generator('JAN') + '</select>' + months_for_every_year_html + '<br>' + time_html;
+            break;
+
+            case 'every_month':
+            inner_div.innerHTML = days_checkbox_generator(28) + only_28_days_warning + time_html;
+            break;
+
+            case 'on_selected_days_of_months':
+            var days_html = days_checkbox_generator(31);
+            inner_div.innerHTML = months_html + '<br>' + days_html + days_warning + time_html;
+            break;
+
+            case 'on_selected_dows':
+            inner_div.innerHTML = dows_html + '<br>' + time_html;
+            break;
+        }
+    }
 
     function check_for_valid(filename) {
         var format = filename.split(".").pop();
@@ -43,6 +156,11 @@
 
     // configure dropzone
     Dropzone.options.dropzone = {
+    init: function() {
+        this.on("addedfile", function(file) {
+        document.getElementById('dz-message').remove();
+        });
+    },
     addRemoveLinks: true,
     accept: function(file, done) {
         var name = file.name;
@@ -73,15 +191,6 @@
     previewsContainer: '#dropzone_preview',
     maxFilesize: null
     };
-
-    function sendFiles() {
-        var dropzone = Dropzone.forElement("#dropzone");
-        dropzone.processQueue();
-        $('#hours').val('123');
-        alert(document.getElementById('hours').value);
-        document.forms["form_data"].submit()
-        window.location.replace("/index");
-    }
 </script>
 </body>
 </html>

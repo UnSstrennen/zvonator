@@ -111,6 +111,28 @@ class Ring:
             res.append(weekdays[weekdays.index(weekday) - 1])
         return res
 
+    def set_from_form(self, form_data):
+        """ gets form data as form_data argument and creates crontab event
+        form_data keys manual:
+        * repeat (required, any mode) - sets the repeating mode for rings.
+            Also, using this data you can understand, what keys you can get then
+        * date (only if repeat is set to 'no') - date DD-MM-YYYY
+        * time (any mode) - time HH-MM-SS
+        *comment (any mode) - comment as plain text in str format
+        * month (one month in str format if repeat is set to 'every_year'
+            or list of months if repeat is set to 'on_selected_days_of_months') - month
+            in three-letters format (first 3 letters in the name of month in upper case
+            for example, JAN means January)
+        * day (one day in str format if repeat is set to 'every_year' or list of days
+            if repeat is set to 'on_selected_days_of_months' or 'every_month') - day(s)
+            of month in str format as numbers
+        * dows (list of days of week if repeat is set to 'on_selected_dows') - day(s) of week
+            if three-letters format (first 3 letters in the name of day of week in upper case
+            for example, MON means Monday)
+         """
+        # TODO: fill a function. Raise an error if repeat data is null
+        return
+
 
 db.create_all()
 ring = Ring()

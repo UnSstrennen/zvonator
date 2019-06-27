@@ -34,12 +34,18 @@ def upload():
         supported_formats_str = ' '.join(SUPPORTED_FORMATS)
         return render_template('upload.html', SUPPORTED_FORMATS=supported_formats_str)
     elif request.method == 'POST':
-        file = request.files['file']
-        print(request.form.get('hours'))
+        try:
+            file = request.files['file']
+        except KeyError:
+            file = False
         if file:
+            print("FILE!")
             filename = secure_filename(file.filename)
             file.save(os.path.join(UPLOAD_DIR, filename))
-        return 'OK'
+            return 'OK'
+        else:
+            ring.set_from_form(request.form)
+            return '12345'
     elif request.method == 'DELETE':
         try:
             track_to_delete = request.json['name']
