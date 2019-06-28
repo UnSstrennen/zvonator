@@ -57,13 +57,41 @@ class Ring:
             command = 'sleep({}); python run.py {};'.format(int(second), ' '.join(files_paths))
             comment = config['cron']['comment_start'] + ' ' + ring_to_add.comment
             continue
-            job = cron.new(command=command, comment=comment)  # TODO: check the command
-            job.hour.on(hour)
-            job.minute.on(minute)
-            if dow != ['*']:
-                job.dow.on(*dow)
+            self.add_cron_task(command, comment, hour, minute, second, dows=dow)
         return
         cron.write()
+
+    def add_cron_task(self, command, comment, hour=100, minute=100, second=100,
+                         month=['*'], day=['*'], dows=['*']):
+        """ Creates cron task. If hour, minute, or second value is 100, than
+        the task repeats every hour, minute or second.
+        If month, day or dows is ['*'], than the task repeats every month,
+        day or dow. Kwargs are not required."""
+        return
+        job = cron.new(command=command, comment=comment)
+        if hour != 100:
+            job.hour.on(hour)
+        if minute != 100:
+            job.hour.on(minute)
+        if second != 100:
+            job.hour.on(second)
+        if month != ['*']:
+            if type(month) is str:
+                month = [month]
+            job.month.on(*month)
+        if day != ['*']:
+            if type(day) is str:
+                day = [day]
+            job.day.on(*day)
+        if dows != ['*']:
+            if type(dows) is str:
+                dows = [dows]
+            job.dow.on(*dows)
+        if job.is_valid():
+            cron.write()
+            return 'OK'
+        else:
+            return 'ERROR: invalid task'
 
     def off(self):
         """ remove zvonator jobs from crontab """
@@ -77,6 +105,7 @@ class Ring:
 
     def collide(self, start_hour_1, start_minute_1, start_second_1, duration_1,
                 start_hour_2, start_minute_2, start_second_2, duration_2):
+        """ checks for collisions. Returns True if there is any collision """
         start_time_1 = start_hour_1 * 3600 + start_minute_1 * 60 + start_second_1
         start_time_2 = start_hour_2 * 3600 + start_minute_2 * 60 + start_second_2
         end_time_1 = start_time_1 + duration_1
@@ -107,6 +136,8 @@ class Ring:
         res = list()
         if dow == ['*']:
             return ['*']
+        if type(dow) is str:
+            dow = [dow]
         for weekday in dow:
             res.append(weekdays[weekdays.index(weekday) - 1])
         return res
@@ -131,7 +162,25 @@ class Ring:
             for example, MON means Monday)
          """
         # TODO: fill a function. Raise an error if repeat data is null
-        return
+        repeat = form_data['repeat']
+        time = form_data['time']
+        hours, minutes, seconds = list(map(int, time.split(':')))
+        comment = form_data['comment']
+        if not repeat:
+            return 'ERROR: form was not filled'
+        elif repeat == 'no':
+            date = form_data['date']  # str DD-MM-YYYY
+        elif repeat == 'every_year':
+            day = form_data['day']  # str as number
+            month = form_data['month']  # three-letter formatted
+        elif repeat == 'every_month':
+            day = form_data['day']  # list
+        elif repeat == 'on_selected_days_of_months':
+            day = form_data['day']  # list
+            month = form_data['month']  # list
+        elif repeat == 'on_selected_dows':
+            dows = form_data['dows']  # list
+        return 'OK'
 
 
 db.create_all()
