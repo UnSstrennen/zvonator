@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from werkzeug.utils import secure_filename
 from main import ring, db, config
 import os
@@ -56,6 +56,22 @@ def upload():
             return 'ERROR: Bad request'
         except FileNotFoundError:
             return 'ERROR: There is no file named {} on the server'.format(track_to_delete)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if not username or not password:
+            return render_template('login.html', error=True)
+        query = Teacher.query.filter_by(username=form.username.data, password=form.password.data).first()
+    if not session.get('user_id', False):
+        # login is required
+        return render_template('login.html', error=False)
+    else:
+        # login is not required, redirect to main page
+        pass
 
 
 if __name__ == '__main__':

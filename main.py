@@ -29,7 +29,11 @@ class Rings(db.Model):
     files_paths = db.Column(db.Text(1000), nullable=False)
 
 
-asdadqfwgfqgaw = Rings.query.all()
+class Users(db.Model):
+    """ DB model of single ring """
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.Text(50), nullable=False)
+    password_hash = db.Column(db.Text(50), nullable=False)
 
 
 class Ring:

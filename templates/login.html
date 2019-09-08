@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Авторизация</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+</head>
+<body>
+    <style>
+        #form_body {
+            padding: 50px;
+            position: fixed; top: 50%; left: 50%;
+            -webkit-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+            border: 6px dotted #17a2b8;
+            border-radius: 50px;
+        }
+        .form_string_field {
+            width: 100%;
+            border-bottom: dotted 3px #17a2b8;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            margin-bottom: 10px;
+        }
+        .center {
+            text-align: center;
+        }
+        #button {
+            width: 50%;
+        }
+    </style>
+
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+    Ошибка! Данные введены неверно или такого пользователя не существует.
+    </div>
+    {% endif %}
+
+    <div id="form_body">
+    <h1>Авторизация</h1>
+    <form action="" method="post" novalidate style="">
+        Логин:<br>
+        <input type="text" placeholder="Введите логин" class="form_string_field" name="username" required>
+        Пароль:<br>
+        <input type="password" placeholder="Введите пароль" class="form_string_field" name="password" required>
+        <div class="center">
+            <div style="height: 10px;"></div>
+        <input type="submit" class="btn btn-lg btn-info">
+        </div>
+        <!-- Maybe it will be useful -->
+        <!-- <a href="register">Вы ещё не с нами? Зарегестируйтесь!</a> -->
+    </form>
+    </div>
+</body>
+</html>
