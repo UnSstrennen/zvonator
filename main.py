@@ -4,15 +4,15 @@ from configparser import ConfigParser
 from crontab import CronTab
 
 
+config = ConfigParser()
+config.read('config.ini')
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://{}:{}@{}/{}'.format(config['database']['username'], config['database']['password'], config['database']['ip'], config['database']['db_name'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'camel-kalmik228'
 db = SQLAlchemy(app)
 db.init_app(app)
-
-config = ConfigParser()
-config.read('config.ini')
 
 # cron = CronTab(user=config['linux_user']['username'])
 

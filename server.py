@@ -10,7 +10,8 @@ SUPPORTED_FORMATS = config['play_settings']['supported_formats'].split()
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://{}:{}@{}/{}'.format(config['database']['username'], config['database']['password'], config['database']['ip'], config['database']['db_name'])
+print(app.config['SQLALCHEMY_DATABASE_URI'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'camel-kalmik228'
 db.init_app(app)
