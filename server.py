@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, session
 from werkzeug.utils import secure_filename
-from main import ring, db, config
+from main import ring, db, config, user
 import os
 from string import punctuation
 
@@ -66,13 +66,30 @@ def login():
         password = request.form.get('password')
         if not username or not password:
             return render_template('login.html', error=True)
-        query = Teacher.query.filter_by(username=form.username.data, password=form.password.data).first()
+        log = user.check_user(username, password)
+        if not str(log).startswith('error'):
+            # ok, log user in
+            session['user_id'] = log  # id is storaged at the log if ok
+            return redirect('/home')
+        else:
+            return render_template('login.html', error=True)
     if not session.get('user_id', False):
         # login is required
         return render_template('login.html', error=False)
     else:
         # login is not required, redirect to main page
-        pass
+        return redirect('/home')
+
+
+@app.route('/home', methods=['GET', 'POST'])
+def home():
+    return 'home there...'
+
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    session.pop('user_id', None)
+    return redirect('/')
 
 
 if __name__ == '__main__':

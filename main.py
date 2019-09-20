@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
+from werkzeug.security import check_password_hash
 from configparser import ConfigParser
 from crontab import CronTab
 
@@ -33,7 +34,7 @@ class Users(db.Model):
     """ DB model of single ring """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.Text(50), nullable=False)
-    password_hash = db.Column(db.Text(50), nullable=False)
+    password_hash = db.Column(db.Text(100), nullable=False)
 
 
 class Ring:
@@ -187,5 +188,19 @@ class Ring:
         return 'OK'
 
 
+class User:
+    def get_user_data(self, username):
+            return Users.query.filter_by(username=username).first()
+
+    def check_user(self, username, password):
+        user_row = self.get_user_data(username)
+        if not user_row:
+            return "error: Пользователь не найден"
+        if not check_password_hash(user_row.password_hash, password):
+            return "error: Неверный пароль"
+        return user_row.id
+
+
 db.create_all()
 ring = Ring()
+user = User()
