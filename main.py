@@ -21,12 +21,13 @@ db.init_app(app)
 class Rings(db.Model):
     """ DB model of single ring """
     id = db.Column(db.Integer, primary_key=True)
-    start_hour = db.Column(db.Integer, nullable=False)
-    start_minute = db.Column(db.Integer, nullable=False)
-    start_second = db.Column(db.Integer, nullable=False)
-    duration = db.Column(db.Integer, nullable=False)
-    dow = db.Column(db.Text(27), nullable=False)
+    start_hour = db.Column(db.Integer, nullable=True)
+    start_minute = db.Column(db.Integer, nullable=True)
+    day = db.Column(db.Integer, nullable=True)
+    month = db.Column(db.Text(3), nullable=True)
+    dow = db.Column(db.Text(27), nullable=True)
     comment = db.Column(db.Text(50), nullable=False)
+    duration = db.Column(db.Integer, nullable=False)
     files_paths = db.Column(db.Text(1000), nullable=False)
 
 
@@ -44,7 +45,10 @@ class Ring:
     def switch(self):
         """ switch ring operating state to opposite mode """
         self.state = not self.state
-        self.on() if self.state else self.off()
+        if self.state:
+            self.on()
+        else:
+            self.off()
 
     def on(self):
         """ create timemable for crontab and update it """
@@ -52,45 +56,36 @@ class Ring:
         amplifier_booting_duration = int(config['amplifier']['boot_duration'])
         rings_to_set = Rings.query.all()
         for ring_to_add in rings_to_set:
-            hour, minute, second = ring_to_add.start_hour, ring_to_add.start_minute, ring_to_add.start_second
+            hour, minute = ring_to_add.start_hour, ring_to_add.start_minute
             files_paths = ring_to_add.files_paths.split(';')
-            dow = ring_to_add.dow.split()
-            hour, minute, second, need_to_shift_dow = self.sub_ring_time(
-                hour, minute, second, amplifier_booting_duration)
-            if need_to_shift_dow:
-                self.shift_dow(dow)
-            command = 'sleep({}); python run.py {};'.format(int(second), ' '.join(files_paths))
+            dow, day, month = ring_to_add.dow.split(), ring_to_add.day.split(), ring_to_add.month.split()
+            # hour, minute, need_to_shift_dow = self.sub_ring_time(hour, minute, amplifier_booting_duration)
+            '''
+            if need_to_shift_dow: 
+                self.shift_dow(dow)'''
+            command = 'sleep({}); python3 run.py {};'.format(int(second), ' '.join(files_paths))
             comment = config['cron']['comment_start'] + ' ' + ring_to_add.comment
             continue
-            self.add_cron_task(command, comment, hour, minute, second, dows=dow)
+            self.add_cron_task(command, comment, hour, minute, month, day, dows)
         return
         cron.write()
 
-    def add_cron_task(self, command, comment, hour=100, minute=100, second=100,
-                         month=['*'], day=['*'], dows=['*']):
+    def add_cron_task(self, command, comment, hour, minute, month, day, dows):
         """ Creates cron task. If hour, minute, or second value is 100, than
         the task repeats every hour, minute or second.
         If month, day or dows is ['*'], than the task repeats every month,
         day or dow. Kwargs are not required."""
         return
         job = cron.new(command=command, comment=comment)
-        if hour != 100:
+        if hour is not None:
             job.hour.on(hour)
-        if minute != 100:
+        if minute is not None:
             job.hour.on(minute)
-        if second != 100:
-            job.hour.on(second)
-        if month != ['*']:
-            if type(month) is str:
-                month = [month]
+        if month is not None:
             job.month.on(*month)
-        if day != ['*']:
-            if type(day) is str:
-                day = [day]
+        if day is not None:
             job.day.on(*day)
-        if dows != ['*']:
-            if type(dows) is str:
-                dows = [dows]
+        if dows is not None:
             job.dow.on(*dows)
         if job.is_valid():
             cron.write()
@@ -108,11 +103,11 @@ class Ring:
                 cron.remove(job)
         cron.write()
 
-    def collide(self, start_hour_1, start_minute_1, start_second_1, duration_1,
-                start_hour_2, start_minute_2, start_second_2, duration_2):
+    def collide(self, start_hour_1, start_minute_1, duration_1,
+                start_hour_2, start_minute_2, duration_2):
         """ checks for collisions. Returns True if there is any collision """
-        start_time_1 = start_hour_1 * 3600 + start_minute_1 * 60 + start_second_1
-        start_time_2 = start_hour_2 * 3600 + start_minute_2 * 60 + start_second_2
+        start_time_1 = start_hour_1 * 3600 + start_minute_1 * 60
+        start_time_2 = start_hour_2 * 3600 + start_minute_2 * 60
         end_time_1 = start_time_1 + duration_1
         end_time_2 = start_time_2 + duration_2
         if start_time_1 <= start_time_2 <= end_time_1 or start_time_1 <= end_time_2 <= end_time_1 or \
@@ -120,7 +115,7 @@ class Ring:
             return True
         return False
 
-    def sub_ring_time(self, hour, minute, sec, sec_to_subtract):
+    """ def sub_ring_time(self, hour, minute, sec, sec_to_subtract):
         flag = False
         # make seconds as days
         time = hour * 3600 + minute * 60 + sec
@@ -145,7 +140,7 @@ class Ring:
             dow = [dow]
         for weekday in dow:
             res.append(weekdays[weekdays.index(weekday) - 1])
-        return res
+        return res """
 
     def set_from_form(self, form_data):
         """ gets form data as form_data argument and creates crontab event
@@ -169,7 +164,7 @@ class Ring:
         # TODO: fill a function. Raise an error if repeat data is null
         repeat = form_data['repeat']
         time = form_data['time']
-        hours, minutes, seconds = list(map(int, time.split(':')))
+        hours, minutes = list(map(int, time.split(':')))
         comment = form_data['comment']
         if not repeat:
             return 'ERROR: form was not filled'
