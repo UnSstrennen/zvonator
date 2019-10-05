@@ -36,6 +36,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.Text(50), nullable=False)
     password_hash = db.Column(db.Text(100), nullable=False)
+    user_info = db.Column(db.Text(500), nullable=False)
 
 
 class Ring:
