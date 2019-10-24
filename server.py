@@ -83,6 +83,9 @@ def login():
 
 @app.route('/home', methods=['GET', 'POST'])
 def home():
+    # if there is no user logged in
+    if not session.get('user_id', False):
+        return redirect('/login')
     return 'home there...'
 
 
@@ -90,6 +93,13 @@ def home():
 def logout():
     session.pop('user_id', None)
     return redirect('/')
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    token = request.args.get('token'))
+    if token is None:
+        return redirect('/home')
 
 
 if __name__ == '__main__':

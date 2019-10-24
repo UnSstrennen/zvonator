@@ -40,6 +40,12 @@ class Users(db.Model):
     user_info = db.Column(db.Text(500), nullable=False)
 
 
+class Tokens(db.Model):
+    """ DB model for tokens """
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.String(db.String(32), nullable=False)
+
+
 class Ring:
     def __init__(self):
         self.state = False
