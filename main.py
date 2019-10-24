@@ -3,6 +3,7 @@ from flask import Flask
 from werkzeug.security import check_password_hash
 from configparser import ConfigParser
 from crontab import CronTab
+from transliterate import translit
 
 
 config = ConfigParser()
@@ -62,7 +63,7 @@ class Ring:
             dow, day, month = ring_to_add.dow.split(), ring_to_add.day.split(), ring_to_add.month.split()
             # hour, minute, need_to_shift_dow = self.sub_ring_time(hour, minute, amplifier_booting_duration)
             '''
-            if need_to_shift_dow: 
+            if need_to_shift_dow:
                 self.shift_dow(dow)'''
             command = 'sleep({}); python3 run.py {};'.format(int(second), ' '.join(files_paths))
             comment = config['cron']['comment_start'] + ' ' + ring_to_add.comment
@@ -166,7 +167,7 @@ class Ring:
         repeat = form_data['repeat']
         time = form_data['time']
         hours, minutes = list(map(int, time.split(':')))
-        comment = form_data['comment']
+        comment = translit(form_data['comment'], 'ru', reversed=True)
         if not repeat:
             return 'ERROR: form was not filled'
         elif repeat == 'no':
