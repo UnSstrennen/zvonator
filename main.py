@@ -4,6 +4,8 @@ from werkzeug.security import check_password_hash
 from configparser import ConfigParser
 from crontab import CronTab
 from transliterate import translit
+from binascii import hexlify
+from os import urandom
 
 
 config = ConfigParser()
@@ -44,6 +46,14 @@ class Tokens(db.Model):
     """ DB model for tokens """
     id = db.Column(db.Integer, primary_key=True)
     token = db.String(db.String(32), nullable=False)
+
+
+class Token:
+    def generate():
+        return hexlify(urandom(16)).decode()
+
+    def check(token):
+        return Tokens.query.filter_by(token=token).first()
 
 
 class Ring:
@@ -197,7 +207,7 @@ class User:
 
     def check_user(self, username, password):
         user_row = self.get_user_data(username)
-        if not user_row:
+        if user_row is None:
             return "error: Пользователь не найден"
         if not check_password_hash(user_row.password_hash, password):
             return "error: Неверный пароль"
