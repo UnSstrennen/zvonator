@@ -5,11 +5,11 @@ from configparser import ConfigParser
 from crontab import CronTab
 from transliterate import translit
 from binascii import hexlify
-from os import urandom
+from os import urandom, path
 
 
 config = ConfigParser()
-config.read('config.ini')
+config.read(path.join(path.dirname(__file__), 'config.ini'))
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://{}:{}@{}/{}'.format(config['database']['username'], config['database']['password'], config['database']['ip'], config['database']['db_name'])
@@ -45,7 +45,7 @@ class Users(db.Model):
 class Tokens(db.Model):
     """ DB model for tokens """
     id = db.Column(db.Integer, primary_key=True)
-    token = db.String(db.String(32), nullable=False)
+    token = db.Column(db.String(32), nullable=False)
 
 
 class Token:
